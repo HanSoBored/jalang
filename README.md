@@ -1,44 +1,59 @@
-# The LLVM Compiler Infrastructure
+# jalang
 
-[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/llvm/llvm-project/badge)](https://securityscorecards.dev/viewer/?uri=github.com/llvm/llvm-project)
-[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/8273/badge)](https://www.bestpractices.dev/projects/8273)
-[![libc++](https://github.com/llvm/llvm-project/actions/workflows/libcxx-pr-conformance-tests.yaml/badge.svg?branch=main&event=schedule)](https://github.com/llvm/llvm-project/actions/workflows/libcxx-pr-conformance-tests.yaml?query=event%3Aschedule)
+**jalang** — a C compiler with Javanese keywords, based on [LLVM/Clang](https://llvm.org).
 
-Welcome to the LLVM project!
+A fork of LLVM/Clang that renames C keywords and preprocessor directives to Javanese, and recognizes `.jawa`/`.jawah` files.
 
-This repository contains the source code for LLVM, a toolkit for the
-construction of highly optimized compilers, optimizers, and run-time
-environments.
+## Features
 
-The LLVM project has multiple components. The core of the project is
-itself called "LLVM". This contains all of the tools, libraries, and header
-files needed to process intermediate representations and convert them into
-object files. Tools include an assembler, disassembler, bitcode analyzer, and
-bitcode optimizer.
+- **Javanese keywords** — `bilangan` → `int`, `nek` → `if`, `bali` → `return`, etc. (see [SYNTAX.md](SYNTAX.md))
+- **Javanese preprocessor directives** — `#melokke` → `#include`, `#tentokke` → `#define`, etc.
+- **`.jawa` / `.jawah` extensions** — recognized by the driver as C source
+- **`jalang` binary** — the clang driver is built as `jalang`
+- **Full C semantics** — pointers, structs, syscalls, all C libraries work
+- **Native output** — machine code via the LLVM backend
 
-C-like languages use the [Clang](https://clang.llvm.org/) frontend. This
-component compiles C, C++, Objective-C, and Objective-C++ code into LLVM bitcode
--- and from there into object files, using LLVM.
+## Example
 
-Other components include:
-the [libc++ C++ standard library](https://libcxx.llvm.org),
-the [LLD linker](https://lld.llvm.org), and more.
+```halo.jawa
+#melokke <stdio.h>
 
-## Getting the Source Code and Building LLVM
+bilangan utama() {
+    printf("halo jawa\n");
+    bali 0;
+}
+```
 
-Consult the
-[Getting Started with LLVM](https://llvm.org/docs/GettingStarted.html#getting-the-source-code-and-building-llvm)
-page for information on building and running LLVM.
+Compile:
 
-For information on how to contribute to the LLVM project, please take a look at
-the [Contributing to LLVM](https://llvm.org/docs/Contributing.html) guide.
+```sh
+jalang -o halo halo.jawa
+./halo
+# halo jawa
+```
 
-## Getting in touch
+## Build
 
-Join the [LLVM Discourse forums](https://discourse.llvm.org/), [Discord
-chat](https://discord.gg/xS7Z362),
-[LLVM Office Hours](https://llvm.org/docs/GettingInvolved.html#office-hours) or
-[Regular sync-ups](https://llvm.org/docs/GettingInvolved.html#online-sync-ups).
+### GitHub Actions
 
-The LLVM project has adopted a [code of conduct](https://llvm.org/docs/CodeOfConduct.html) for
-participants to all modes of communication within the project.
+Workflow [`.github/workflows/build-jalang.yml`](.github/workflows/build-jalang.yml) builds for:
+
+- **Linux x86_64**
+- **Android arm64** — NDK cross-compile, for Termux
+
+Artifacts: `jalang-linux-x86_64.tar.gz` and `jalang-android-arm64.tar.gz`.
+
+### Manual
+
+```sh
+cmake -G Ninja -S llvm -B build \
+  -DLLVM_ENABLE_PROJECTS=clang \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DLLVM_TARGETS_TO_BUILD=host
+cmake --build build --target clang -j$(nproc)
+# binary: build/bin/jalang
+```
+
+## License
+
+Fork of the [LLVM Project](https://github.com/llvm/llvm-project), licensed under the **Apache License v2.0 with LLVM Exceptions** (see [LICENSE.TXT](LICENSE.TXT)).

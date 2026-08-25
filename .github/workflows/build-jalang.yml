@@ -1,0 +1,104 @@
+name: build-jalang
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build-linux:
+    name: Build jalang (Linux x86_64)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build cmake python3 lld
+
+      - name: Configure
+        run: |
+          cmake -G Ninja -S llvm -B build \
+            -DLLVM_ENABLE_PROJECTS=clang \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DLLVM_TARGETS_TO_BUILD=host \
+            -DLLVM_USE_LINKER=lld \
+            -DLLVM_PARALLEL_LINK_JOBS=2 \
+            -DCLANG_ENABLE_STATIC_ANALYZER=OFF \
+            -DCLANG_ENABLE_ARCMT=OFF \
+            -DCLANG_ENABLE_OBJC_REWRITER=OFF \
+            -DLLVM_ENABLE_ASSERTIONS=OFF
+
+      - name: Build
+        run: cmake --build build --target clang -j$(nproc)
+
+      - name: Strip
+        run: strip build/bin/jalang
+
+      - name: Package
+        run: |
+          mkdir -p jalang-linux/bin jalang-linux/lib
+          cp build/bin/jalang jalang-linux/bin/
+          cp -r build/lib/clang jalang-linux/lib/
+          tar czf jalang-linux-x86_64.tar.gz jalang-linux
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: jalang-linux-x86_64
+          path: jalang-linux-x86_64.tar.gz
+
+  build-android:
+    name: Build jalang (Android arm64)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Install dependencies + NDK
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build cmake python3 unzip lld
+          wget -q https://dl.google.com/android/repository/android-ndk-r27-linux.zip
+          unzip -q android-ndk-r27-linux.zip
+
+      - name: Configure
+        run: |
+          cmake -G Ninja -S llvm -B build-android \
+            -DCMAKE_TOOLCHAIN_FILE=$PWD/android-ndk-r27/build/cmake/android.toolchain.cmake \
+            -DANDROID_ABI=arm64-v8a \
+            -DANDROID_PLATFORM=android-24 \
+            -DANDROID_STL=c++_static \
+            -DLLVM_ENABLE_PROJECTS=clang \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DLLVM_TARGETS_TO_BUILD=AArch64 \
+            -DLLVM_USE_LINKER=lld \
+            -DLLVM_PARALLEL_LINK_JOBS=2 \
+            -DLLVM_ENABLE_TERMINFO=OFF \
+            -DCLANG_ENABLE_STATIC_ANALYZER=OFF \
+            -DCLANG_ENABLE_ARCMT=OFF \
+            -DLLVM_ENABLE_ASSERTIONS=OFF
+
+      - name: Build
+        run: cmake --build build-android --target clang -j$(nproc)
+
+      - name: Strip
+        run: $PWD/android-ndk-r27/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip build-android/bin/jalang
+
+      - name: Package
+        run: |
+          mkdir -p jalang-android/bin jalang-android/lib
+          cp build-android/bin/jalang jalang-android/bin/
+          cp -r build-android/lib/clang jalang-android/lib/
+          tar czf jalang-android-arm64.tar.gz jalang-android
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: jalang-android-arm64
+          path: jalang-android-arm64.tar.gz

@@ -515,7 +515,9 @@ void Preprocessor::SuggestTypoedDirective(const Token &Tok,
   if (getLangOpts().AsmPreprocessor) return;
 
   std::vector<StringRef> Candidates = {
-      "if", "ifdef", "ifndef", "elif", "else", "endif"
+      "if", "ifdef", "ifndef", "elif", "else", "endif",
+      // Jalang: Javanese conditional directive aliases.
+      "nek", "nekenek", "nekoraenek", "nekliyane", "nekora", "rampungnek"
   };
   if (LangOpts.C23 || LangOpts.CPlusPlus23)
     Candidates.insert(Candidates.end(), {"elifdef", "elifndef"});
@@ -734,7 +736,8 @@ void Preprocessor::SkipExcludedConditionalBlock(SourceLocation HashTokenLoc,
 
     char FirstChar = RI[0];
     if (FirstChar >= 'a' && FirstChar <= 'z' &&
-        FirstChar != 'i' && FirstChar != 'e') {
+        FirstChar != 'i' && FirstChar != 'e' &&
+        FirstChar != 'n' && FirstChar != 'r') {
       CurPPLexer->ParsingPreprocessorDirective = false;
       // Restore comment saving mode.
       if (CurLexer) CurLexer->resetExtendedTokenMode();
@@ -761,11 +764,15 @@ void Preprocessor::SkipExcludedConditionalBlock(SourceLocation HashTokenLoc,
       Directive = StringRef(DirectiveBuf, IdLen);
     }
 
-    if (Directive.starts_with("if")) {
+    // Jalang: also recognize Javanese conditional directives while skipping.
+    bool IsJawaIf = Directive == "nek" || Directive == "nekenek" ||
+                    Directive == "nekoraenek";
+    if (Directive.starts_with("if") || IsJawaIf) {
       StringRef Sub = Directive.substr(2);
       if (Sub.empty() ||   // "if"
           Sub == "def" ||   // "ifdef"
-          Sub == "ndef") {  // "ifndef"
+          Sub == "ndef" ||  // "ifndef"
+          IsJawaIf) {       // "nek"/"nekenek"/"nekoraenek"
         // We know the entire #if/#ifdef/#ifndef block will be skipped, don't
         // bother parsing the condition.
         DiscardUntilEndOfDirective();
@@ -775,9 +782,10 @@ void Preprocessor::SkipExcludedConditionalBlock(SourceLocation HashTokenLoc,
       } else {
         SuggestTypoedDirective(Tok, Directive);
       }
-    } else if (Directive[0] == 'e') {
+    } else if (Directive[0] == 'e' || Directive == "rampungnek" ||
+               Directive == "nekora" || Directive == "nekliyane") {
       StringRef Sub = Directive.substr(1);
-      if (Sub == "ndif") {  // "endif"
+      if (Sub == "ndif" || Directive == "rampungnek") {  // "endif"
         PPConditionalInfo CondInfo;
         CondInfo.WasSkipping = true; // Silence bogus warning.
         bool InCond = CurPPLexer->popConditionalLevel(CondInfo);
@@ -798,7 +806,7 @@ void Preprocessor::SkipExcludedConditionalBlock(SourceLocation HashTokenLoc,
         } else {
           DiscardUntilEndOfDirective();
         }
-      } else if (Sub == "lse") { // "else".
+      } else if (Sub == "lse" || Directive == "nekora") { // "else".
         // #else directive in a skipping conditional.  If not in some other
         // skipping conditional, and if #else hasn't already been seen, enter it
         // as a non-skipping conditional.
@@ -829,7 +837,7 @@ void Preprocessor::SkipExcludedConditionalBlock(SourceLocation HashTokenLoc,
         } else {
           DiscardUntilEndOfDirective();  // C99 6.10p4.
         }
-      } else if (Sub == "lif") {  // "elif".
+      } else if (Sub == "lif" || Directive == "nekliyane") {  // "elif".
         PPConditionalInfo &CondInfo = CurPPLexer->peekConditionalLevel();
 
         if (!CondInfo.WasSkipping)

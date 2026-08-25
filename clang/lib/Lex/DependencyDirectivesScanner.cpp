@@ -989,7 +989,7 @@ bool Scanner::lexPPLine(const char *&First, const char *const End) {
 
   StringRef Id = *FoundId;
 
-  if (Id == "pragma")
+  if (Id == "pragma" || Id == "prentah")
     return lexPragma(First, End);
 
   auto Kind = llvm::StringSwitch<DirectiveKind>(Id)
@@ -1007,6 +1007,16 @@ bool Scanner::lexPPLine(const char *&First, const char *const End) {
                   .Case("elifndef", pp_elifndef)
                   .Case("else", pp_else)
                   .Case("endif", pp_endif)
+                  // Jalang: Javanese preprocessor directive aliases.
+                  .Case("melokke", pp_include)
+                  .Case("tentokke", pp_define)
+                  .Case("nek", pp_if)
+                  .Case("nekenek", pp_ifdef)
+                  .Case("nekoraenek", pp_ifndef)
+                  .Case("nekliyane", pp_elif)
+                  .Case("nekora", pp_else)
+                  .Case("rampungnek", pp_endif)
+                  .Case("batalke", pp_undef)
                   .Default(pp_none);
   if (Kind == pp_none) {
     skipDirective(Id, First, End);

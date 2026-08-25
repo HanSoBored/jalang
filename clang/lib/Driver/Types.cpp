@@ -333,6 +333,9 @@ types::ID types::lookupTypeForExtension(llvm::StringRef Ext) {
   return llvm::StringSwitch<types::ID>(Ext)
       .Case("c", TY_C)
       .Case("C", TY_CXX)
+      // Jalang: Javanese source extensions.
+      .Case("jawa", TY_C)
+      .Case("jawah", TY_C)
       .Case("F", TY_Fortran)
       .Case("f", TY_PP_Fortran)
       .Case("h", TY_CHeader)

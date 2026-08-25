@@ -770,6 +770,19 @@ PreambleBounds Lexer::ComputePreamble(StringRef Buffer,
               .Case("elifndef", PDK_Skipped)
               .Case("else", PDK_Skipped)
               .Case("endif", PDK_Skipped)
+              // Jalang: Javanese preprocessor directive aliases.
+              .Case("melokke", PDK_Skipped)
+              .Case("tentokke", PDK_Skipped)
+              .Case("nek", PDK_Skipped)
+              .Case("nekenek", PDK_Skipped)
+              .Case("nekoraenek", PDK_Skipped)
+              .Case("nekliyane", PDK_Skipped)
+              .Case("nekora", PDK_Skipped)
+              .Case("rampungnek", PDK_Skipped)
+              .Case("batalke", PDK_Skipped)
+              .Case("prentah", PDK_Skipped)
+              .Case("atiati", PDK_Skipped)
+              .Case("garis", PDK_Skipped)
               .Default(PDK_Unknown);
 
         switch (PDK) {

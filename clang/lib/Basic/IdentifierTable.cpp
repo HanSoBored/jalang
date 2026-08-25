@@ -458,6 +458,32 @@ tok::PPKeywordKind IdentifierInfo::getPPKeywordID() const {
   CASE(15, '_', 'p', __private_macro);
 
   CASE(16, '_', 'i', __include_macros);
+
+  // Jalang: Javanese preprocessor directive aliases.
+  case HASH(7, 'm', 'l'):
+    return memcmp(Name, "melokke", 7) ? tok::pp_not_keyword : tok::pp_include;
+  case HASH(8, 't', 'n'):
+    return memcmp(Name, "tentokke", 8) ? tok::pp_not_keyword : tok::pp_define;
+  case HASH(3, 'n', 'k'):
+    return memcmp(Name, "nek", 3) ? tok::pp_not_keyword : tok::pp_if;
+  case HASH(7, 'n', 'k'):
+    return memcmp(Name, "nekenek", 7) ? tok::pp_not_keyword : tok::pp_ifdef;
+  case HASH(10, 'n', 'k'):
+    return memcmp(Name, "nekoraenek", 10) ? tok::pp_not_keyword : tok::pp_ifndef;
+  case HASH(9, 'n', 'k'):
+    return memcmp(Name, "nekliyane", 9) ? tok::pp_not_keyword : tok::pp_elif;
+  case HASH(6, 'n', 'k'):
+    return memcmp(Name, "nekora", 6) ? tok::pp_not_keyword : tok::pp_else;
+  case HASH(10, 'r', 'm'):
+    return memcmp(Name, "rampungnek", 10) ? tok::pp_not_keyword : tok::pp_endif;
+  case HASH(7, 'b', 't'):
+    return memcmp(Name, "batalke", 7) ? tok::pp_not_keyword : tok::pp_undef;
+  case HASH(7, 'p', 'e'):
+    return memcmp(Name, "prentah", 7) ? tok::pp_not_keyword : tok::pp_pragma;
+  case HASH(6, 'a', 'i'):
+    return memcmp(Name, "atiati", 6) ? tok::pp_not_keyword : tok::pp_warning;
+  case HASH(5, 'g', 'r'):
+    return memcmp(Name, "garis", 5) ? tok::pp_not_keyword : tok::pp_line;
 #undef CASE
 #undef HASH
   }
