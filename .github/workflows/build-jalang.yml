@@ -3,6 +3,10 @@ name: build-jalang
 on:
   push:
     branches: [main]
+    paths:
+      - 'clang/**'
+      - 'llvm/**'
+      - '.github/workflows/build-jalang.yml'
   pull_request:
   workflow_dispatch:
 
