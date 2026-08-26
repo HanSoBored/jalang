@@ -2492,6 +2492,9 @@ void Driver::PrintVersion(const Compilation &C, raw_ostream &OS) const {
     // know what the client would like to do.
     OS << getClangFullVersion() << '\n';
   }
+  std::string Rev = getClangRevision();
+  if (!Rev.empty())
+    OS << "Git revision: " << Rev.substr(0, 7) << '\n';
   const ToolChain &TC = C.getDefaultToolChain();
   OS << "Target: " << TC.getTripleString() << '\n';
 

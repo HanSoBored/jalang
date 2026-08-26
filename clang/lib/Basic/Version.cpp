@@ -94,7 +94,9 @@ std::string getClangFullRepositoryVersion() {
 }
 
 std::string getClangFullVersion() {
-  return getClangToolFullVersion("clang");
+  return "jalang " JALANG_VERSION_STRING " with clang version "
+         CLANG_VERSION_MAJOR_STRING "." CLANG_VERSION_MINOR_STRING "."
+         CLANG_VERSION_PATCHLEVEL_STRING;
 }
 
 std::string getClangToolFullVersion(StringRef ToolName) {

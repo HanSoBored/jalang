@@ -395,6 +395,9 @@ set(CLANG_VERSION "${CLANG_VERSION_MAJOR}.${CLANG_VERSION_MINOR}.${CLANG_VERSION
 set(MAX_CLANG_ABI_COMPAT_VERSION "${LLVM_VERSION_MAJOR}")
 message(STATUS "Clang version: ${CLANG_VERSION}")
 
+# Jalang: version string for the jalang compiler (bump on release).
+set(JALANG_VERSION "0.1.4-dev" CACHE STRING "Jalang version string")
+
 # Configure the Version.inc file.
 configure_file(
   ${CMAKE_CURRENT_SOURCE_DIR}/include/clang/Basic/Version.inc.in
