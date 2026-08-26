@@ -288,6 +288,12 @@ Linux::Linux(const Driver &D, const llvm::Triple &Triple, const ArgList &Args)
     } else {
       ExtraOpts.push_back("--pack-dyn-relocs=android");
     }
+    // Termux: add an rpath to $PREFIX/lib so the bionic linker finds
+    // Termux libraries (ncurses, etc.) at runtime.
+    if (getVFS().exists(concat(SysRoot, "/lib"))) {
+      ExtraOpts.push_back("-rpath");
+      ExtraOpts.push_back(Args.MakeArgString(concat(SysRoot, "/lib")));
+    }
   }
 
   if (GCCInstallation.getParentLibPath().contains("opt/rh/"))
