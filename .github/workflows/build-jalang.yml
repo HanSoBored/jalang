@@ -33,7 +33,7 @@ jobs:
       - name: Configure
         run: |
           cmake -G Ninja -S llvm -B build \
-            -DLLVM_ENABLE_PROJECTS=clang,clang-tools-extra \
+            -DLLVM_ENABLE_PROJECTS="clang;clang-tools-extra" \
             -DCMAKE_BUILD_TYPE=Release \
             -DLLVM_TARGETS_TO_BUILD=host \
             -DLLVM_USE_LINKER=lld \
@@ -94,7 +94,7 @@ jobs:
             -DANDROID_ABI=arm64-v8a \
             -DANDROID_PLATFORM=android-24 \
             -DANDROID_STL=c++_static \
-            -DLLVM_ENABLE_PROJECTS=clang,clang-tools-extra \
+            -DLLVM_ENABLE_PROJECTS="clang;clang-tools-extra" \
             -DLLVM_ENABLE_RUNTIMES=compiler-rt \
             -DCMAKE_BUILD_TYPE=Release \
             -DLLVM_TARGETS_TO_BUILD=AArch64 \
