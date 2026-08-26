@@ -1394,10 +1394,9 @@ static void CollectARMPACBTIOptions(const ToolChain &TC, const ArgList &Args,
                      : Args.getLastArg(options::OPT_mbranch_protection_EQ);
   if (!A) {
     if ((Triple.isOSOpenBSD() || Triple.isAndroid()) && isAArch64) {
-      // Termux: the bionic linker on older Android versions doesn't
-      // understand the BTI/PAC dynamic entries, so keep branch protection
-      // off by default.
-      if (!(Triple.isAndroid() && ::getenv("PREFIX"))) {
+      // The bionic linker only understands the BTI dynamic entry on
+      // Android 13+ (API 33); older versions warn about the unused entry.
+      if (!(Triple.isAndroid() && Triple.isAndroidVersionLT(33))) {
         CmdArgs.push_back("-msign-return-address=non-leaf");
         CmdArgs.push_back("-msign-return-address-key=a_key");
         CmdArgs.push_back("-mbranch-target-enforce");
