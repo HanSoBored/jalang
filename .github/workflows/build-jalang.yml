@@ -21,6 +21,15 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y ninja-build cmake python3 lld
 
+      - name: Count jalang commits
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          UPSTREAM_SHA=$(gh api repos/llvm/llvm-project/commits/main --jq '.sha')
+          JALANG_COMMITS=$(gh api "repos/${{ github.repository }}/compare/$UPSTREAM_SHA...main" --jq '.ahead_by')
+          JALANG_COMMITS=${JALANG_COMMITS:-0}
+          echo "JALANG_COMMITS=$JALANG_COMMITS" >> $GITHUB_ENV
+
       - name: Configure
         run: |
           cmake -G Ninja -S llvm -B build \
@@ -32,7 +41,8 @@ jobs:
             -DCLANG_ENABLE_STATIC_ANALYZER=OFF \
             -DCLANG_ENABLE_ARCMT=OFF \
             -DCLANG_ENABLE_OBJC_REWRITER=OFF \
-            -DLLVM_ENABLE_ASSERTIONS=OFF
+            -DLLVM_ENABLE_ASSERTIONS=OFF \
+            -DJALANG_VERSION=0.1.${JALANG_COMMITS}-dev
 
       - name: Build
         run: cmake --build build --target clang -j$(nproc)
@@ -68,6 +78,15 @@ jobs:
           wget -q https://dl.google.com/android/repository/android-ndk-r27-linux.zip
           unzip -q android-ndk-r27-linux.zip
 
+      - name: Count jalang commits
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          UPSTREAM_SHA=$(gh api repos/llvm/llvm-project/commits/main --jq '.sha')
+          JALANG_COMMITS=$(gh api "repos/${{ github.repository }}/compare/$UPSTREAM_SHA...main" --jq '.ahead_by')
+          JALANG_COMMITS=${JALANG_COMMITS:-0}
+          echo "JALANG_COMMITS=$JALANG_COMMITS" >> $GITHUB_ENV
+
       - name: Configure
         run: |
           cmake -G Ninja -S llvm -B build-android \
@@ -91,7 +110,8 @@ jobs:
             -DCOMPILER_RT_BUILD_LIBFUZZER=OFF \
             -DCOMPILER_RT_BUILD_MEMPROF=OFF \
             -DCOMPILER_RT_BUILD_ORC=OFF \
-            -DCOMPILER_RT_BUILD_PROFILE=OFF
+            -DCOMPILER_RT_BUILD_PROFILE=OFF \
+            -DJALANG_VERSION=0.1.${JALANG_COMMITS}-dev
 
       - name: Build
         run: cmake --build build-android --target clang compiler-rt -j$(nproc)
