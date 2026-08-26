@@ -104,6 +104,12 @@ jobs:
           mkdir -p jalang-android/bin jalang-android/lib
           cp build-android/bin/jalang jalang-android/bin/
           cp -r build-android/lib/clang jalang-android/lib/
+          # compiler-rt names the builtins without the -android suffix; clang
+          # looks for the per-triple name.
+          CLANG_VER=$(ls build-android/lib/clang)
+          mkdir -p jalang-android/lib/clang/$CLANG_VER/lib/aarch64-unknown-linux-android24
+          cp build-android/lib/clang/$CLANG_VER/lib/linux/libclang_rt.builtins-aarch64.a \
+             jalang-android/lib/clang/$CLANG_VER/lib/aarch64-unknown-linux-android24/libclang_rt.builtins.a
           tar czf jalang-android-arm64.tar.gz jalang-android
 
       - uses: actions/upload-artifact@v4
