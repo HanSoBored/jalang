@@ -7,6 +7,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "Linux.h"
+#include <cstdlib>
 #include "Arch/ARM.h"
 #include "Arch/LoongArch.h"
 #include "Arch/Mips.h"
@@ -368,6 +369,12 @@ Linux::Linux(const Driver &D, const llvm::Triple &Triple, const ArgList &Args)
   Generic_GCC::AddMultiarchPaths(D, SysRoot, OSLibDir, Paths);
 
   addPathIfExists(D, concat(SysRoot, "/lib"), Paths);
+  if (IsAndroid) {
+    // Termux: bionic libraries live in $PREFIX/$triple/lib and the device's
+    // /system/lib64.
+    addPathIfExists(D, concat(SysRoot, "/", MultiarchTriple, "/lib"), Paths);
+    addPathIfExists(D, "/system/lib64", Paths);
+  }
   addPathIfExists(D, concat(SysRoot, "/usr/lib"), Paths);
 }
 
@@ -406,6 +413,11 @@ std::string Linux::computeSysRoot() const {
     return getDriver().SysRoot;
 
   if (getTriple().isAndroid()) {
+    // Termux: use $PREFIX as the sysroot.
+    if (const char *Prefix = ::getenv("PREFIX")) {
+      if (getVFS().exists(Prefix))
+        return Prefix;
+    }
     // Android toolchains typically include a sysroot at ../sysroot relative to
     // the clang binary.
     const StringRef ClangDir = getDriver().Dir;
@@ -822,6 +834,16 @@ void Linux::AddClangSystemIncludeArgs(const ArgList &DriverArgs,
     addExternCSystemInclude(
         DriverArgs, CC1Args,
         concat(SysRoot, "/usr/include", MultiarchIncludeDir));
+
+  // Termux: headers live in $PREFIX/include and $PREFIX/include/$triple.
+  if (getTriple().isAndroid() &&
+      D.getVFS().exists(concat(SysRoot, "/include"))) {
+    if (!MultiarchIncludeDir.empty() &&
+        D.getVFS().exists(concat(SysRoot, "/include", MultiarchIncludeDir)))
+      addExternCSystemInclude(DriverArgs, CC1Args,
+                              concat(SysRoot, "/include", MultiarchIncludeDir));
+    addExternCSystemInclude(DriverArgs, CC1Args, concat(SysRoot, "/include"));
+  }
 
   if (getTriple().getOS() == llvm::Triple::RTEMS)
     return;

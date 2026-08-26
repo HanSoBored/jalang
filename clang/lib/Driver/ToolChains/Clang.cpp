@@ -7,6 +7,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "Clang.h"
+#include <cstdlib>
 #include "Arch/AArch64.h"
 #include "Arch/ARM.h"
 #include "Arch/LoongArch.h"
@@ -1393,9 +1394,14 @@ static void CollectARMPACBTIOptions(const ToolChain &TC, const ArgList &Args,
                      : Args.getLastArg(options::OPT_mbranch_protection_EQ);
   if (!A) {
     if ((Triple.isOSOpenBSD() || Triple.isAndroid()) && isAArch64) {
-      CmdArgs.push_back("-msign-return-address=non-leaf");
-      CmdArgs.push_back("-msign-return-address-key=a_key");
-      CmdArgs.push_back("-mbranch-target-enforce");
+      // Termux: the bionic linker on older Android versions doesn't
+      // understand the BTI/PAC dynamic entries, so keep branch protection
+      // off by default.
+      if (!(Triple.isAndroid() && ::getenv("PREFIX"))) {
+        CmdArgs.push_back("-msign-return-address=non-leaf");
+        CmdArgs.push_back("-msign-return-address-key=a_key");
+        CmdArgs.push_back("-mbranch-target-enforce");
+      }
     }
     return;
   }

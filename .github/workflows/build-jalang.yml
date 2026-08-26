@@ -76,17 +76,25 @@ jobs:
             -DANDROID_PLATFORM=android-24 \
             -DANDROID_STL=c++_static \
             -DLLVM_ENABLE_PROJECTS=clang \
+            -DLLVM_ENABLE_RUNTIMES=compiler-rt \
             -DCMAKE_BUILD_TYPE=Release \
             -DLLVM_TARGETS_TO_BUILD=AArch64 \
+            -DLLVM_DEFAULT_TARGET_TRIPLE=aarch64-unknown-linux-android24 \
             -DLLVM_USE_LINKER=lld \
             -DLLVM_PARALLEL_LINK_JOBS=2 \
             -DLLVM_ENABLE_TERMINFO=OFF \
             -DCLANG_ENABLE_STATIC_ANALYZER=OFF \
             -DCLANG_ENABLE_ARCMT=OFF \
-            -DLLVM_ENABLE_ASSERTIONS=OFF
+            -DLLVM_ENABLE_ASSERTIONS=OFF \
+            -DCOMPILER_RT_BUILD_SANITIZERS=OFF \
+            -DCOMPILER_RT_BUILD_XRAY=OFF \
+            -DCOMPILER_RT_BUILD_LIBFUZZER=OFF \
+            -DCOMPILER_RT_BUILD_MEMPROF=OFF \
+            -DCOMPILER_RT_BUILD_ORC=OFF \
+            -DCOMPILER_RT_BUILD_PROFILE=OFF
 
       - name: Build
-        run: cmake --build build-android --target clang -j$(nproc)
+        run: cmake --build build-android --target clang compiler-rt -j$(nproc)
 
       - name: Strip
         run: $PWD/android-ndk-r27/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip build-android/bin/jalang
